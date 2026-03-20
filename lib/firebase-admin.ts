@@ -22,7 +22,10 @@ export function getAdminDb() {
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
         // .env stores \n as literal chars — convert to real newlines
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+        // Vercel sometimes adds quotes to multiline strings, strip them
+        privateKey: process.env.FIREBASE_PRIVATE_KEY
+          ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n").replace(/(^"|"$)/g, "")
+          : undefined,
       }),
     });
   }

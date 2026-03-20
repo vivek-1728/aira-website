@@ -14,9 +14,6 @@ import { Resend } from "resend";
 export async function POST(req: NextRequest) {
   try {
     const adminDb = getAdminDb();
-    // Lazy-load Resend to prevent build-time crash when env var is missing
-    const resend = new Resend(process.env.RESEND_API_KEY);
-
 
     // Parse the incoming JSON body
     const body = await req.json();
@@ -52,10 +49,14 @@ export async function POST(req: NextRequest) {
 
     // ── Send Email Notification via Resend ───────────────────
     try {
-      await resend.emails.send({
-        from: 'Aira.ai Leads <onboarding@resend.dev>',
-        to: 'kappativivekananda@gmail.com', // MUST MATCH RESEND VERIFIED EMAIL
-        subject: `New Lead: ${projectType.toUpperCase()} Project from ${name}`,
+      if (!process.env.RESEND_API_KEY) {
+        console.warn("RESEND_API_KEY is missing. Skipping email notification.");
+      } else {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: 'Aira.ai Leads <onboarding@resend.dev>',
+          to: 'kappativivekananda@gmail.com', // MUST MATCH RESEND VERIFIED EMAIL
+          subject: `New Lead: ${projectType.toUpperCase()} Project from ${name}`,
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
             <h2>🚨 New Lead Received</h2>
@@ -68,8 +69,9 @@ export async function POST(req: NextRequest) {
             <p style="white-space: pre-wrap; background: #f4f4f5; padding: 16px; border-radius: 8px;">${message}</p>
           </div>
         `
-      });
-      console.log("Email notification sent successfully.");
+        });
+        console.log("Email notification sent successfully.");
+      }
     } catch (emailError) {
       console.error("Failed to send email notification:", emailError);
       // We don't fail the whole request if just the email fails
