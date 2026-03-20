@@ -11,11 +11,12 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(req: NextRequest) {
   try {
     const adminDb = getAdminDb();
+    // Lazy-load Resend to prevent build-time crash when env var is missing
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
 
     // Parse the incoming JSON body
     const body = await req.json();
