@@ -9,17 +9,24 @@
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
-// Prevent re-initialization during hot-reload
-if (getApps().length === 0) {
-  initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      // .env stores \n as literal chars — convert to real newlines
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    }),
-  });
+// Lazy-load initialization so Next.js doesn't crash during build time
+export function getAdminDb() {
+  if (getApps().length === 0) {
+    // Check if variables exist to prevent silent failures
+    if (!process.env.FIREBASE_PROJECT_ID) {
+      console.warn("Firebase Admin missing FIREBASE_PROJECT_ID");
+    }
+
+    initializeApp({
+      credential: cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        // .env stores \n as literal chars — convert to real newlines
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      }),
+    });
+  }
+
+  return getFirestore();
 }
 
-// Export the Firestore instance for use in API routes
-export const adminDb = getFirestore();
