@@ -19,12 +19,12 @@ export function getAdminDb() {
 
     initializeApp({
       credential: cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        projectId: process.env.FIREBASE_PROJECT_ID?.trim(),
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL?.trim(),
         // .env stores \n as literal chars — convert to real newlines
         // Vercel sometimes adds quotes to multiline strings, strip them
         privateKey: process.env.FIREBASE_PRIVATE_KEY
-          ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n").replace(/(^"|"$)/g, "")
+          ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n").replace(/(^"|"$)/g, "").trim()
           : undefined,
       }),
     });

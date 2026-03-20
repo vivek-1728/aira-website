@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Lead submission error:", error);
     return NextResponse.json(
-      { error: "Failed to submit lead. Please try again." },
+      { error: "Failed to submit lead. Please try again.", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
